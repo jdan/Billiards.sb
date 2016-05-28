@@ -104,11 +104,12 @@ tableFriction = 0.01
 
 Draw()
 
-cueWidth = 7
+cueWidth = 6
 cueHandleLength = 80
 cueBodyLength = 70
-cueTipLength = 4
+cueTipLength = 2
 cueDistance = 20
+cueAngle = 0
 
 GraphicsWindow.PenWidth = 0
 GraphicsWindow.BrushColor = "DarkGoldenrod"
@@ -121,6 +122,8 @@ cueTip = Shapes.AddRectangle(cueTipLength, cueWidth)
 Shapes.HideShape(cueHandle)
 Shapes.HideShape(cueBody)
 Shapes.HideShape(cueTip)
+
+GraphicsWindow.MouseDown = onMouseDown
 
 Sub ShowCue
   mouseX = GraphicsWindow.MouseX
@@ -186,7 +189,16 @@ Sub ATan2
 EndSub
 
 Sub HideCue
+  Shapes.HideShape(cueTip)
+  Shapes.HideShape(cueBody)
   Shapes.HideShape(cueHandle)
+EndSub
+
+Sub OnMouseDown
+  If ballVelocity = 0 Then
+    ballAngle = Math.Pi + cueAngle
+    ballVelocity = 20
+  EndIf
 EndSub
 
 While ("True")

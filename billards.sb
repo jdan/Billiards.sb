@@ -98,12 +98,104 @@ ballX = tableX + 0.75 * tableWidth
 ballY = tableY + 0.5 * tableHeight
 Shapes.Move(ball, ballX - ballRadius, ballY - ballRadius)
 
-ballVelocity = 10
+ballVelocity = 0
 ballAngle = -120 * Math.Pi / 180
 tableFriction = 0.01
 
 Draw()
+
+cueWidth = 7
+cueHandleLength = 80
+cueBodyLength = 70
+cueTipLength = 4
+cueDistance = 20
+
+GraphicsWindow.PenWidth = 0
+GraphicsWindow.BrushColor = "DarkGoldenrod"
+cueHandle = Shapes.AddRectangle(cueHandleLength, cueWidth)
+GraphicsWindow.BrushColor = "White"
+cueBody = Shapes.AddRectangle(cueBodyLength, cueWidth)
+GraphicsWindow.BrushColor = "Black"
+cueTip = Shapes.AddRectangle(cueTipLength, cueWidth)
+
+Shapes.HideShape(cueHandle)
+Shapes.HideShape(cueBody)
+Shapes.HideShape(cueTip)
+
+Sub ShowCue
+  mouseX = GraphicsWindow.MouseX
+  mouseY = GraphicsWindow.MouseY
+  
+  dx = mouseX - ballX
+  dy = mouseY - ballY
+  
+  Stack.PushValue("ATan2", dx)
+  Stack.PushValue("ATan2", dy)
+  ATan2()
+  cueAngle = Stack.PopValue("ATan2")
+  
+  cueTopLeftX = ballX + cueDistance * Math.Cos(cueAngle)
+  cueTopLeftY = ballY + cueDistance * Math.Sin(cueAngle)
+  
+  ' Center the stick along the orthogonal axis
+  cueTopLeftX = cueTopLeftX + (cueWidth / 2) * Math.Sin(cueAngle)
+  cueTopLeftY = cueTopLeftY - (cueWidth / 2) * Math.Cos(cueAngle)
+  
+  ' Now position the three parts
+  ' Tip goes right at the topLeft
+  Shapes.Move(cueTip, cueTopLeftX, cueTopLeftY)
+  Shapes.Rotate(cueTip, cueAngle * 180 / Math.Pi)
+  
+  ' Body needs to extend out from the tip
+  cueBodyX = cueTopLeftX + cueTipLength * Math.Cos(cueAngle)
+  cueBodyY = cueTopLeftY + cueTipLength * Math.Sin(cueAngle)
+  Shapes.Move(cueBody, cueBodyX, cueBodyY)
+  Shapes.Rotate(cueBody, cueAngle * 180 / Math.Pi)
+  
+  ' Handle extends out from the body
+  cueHandleX = cueBodyX + cueBodyLength * Math.Cos(cueAngle)
+  cueHandleY = cueBodyY + cueBodyLength * Math.Sin(cueAngle)
+  Shapes.Move(cueHandle, cueHandleX, cueHandleY)
+  Shapes.Rotate(cueHandle, cueAngle * 180 / Math.Pi)
+  
+  ' Reveal all three parts
+  Shapes.ShowShape(cueTip)
+  Shapes.ShowShape(cueBody)
+  Shapes.ShowShape(cueHandle)
+EndSub
+
+Sub ATan2
+  dy = Stack.PopValue("ATan2")
+  dx = Stack.PopValue("ATan2")
+  
+  If dx > 0 Then
+    angle = Math.ArcTan(dy / dx)
+  ElseIf dx < 0 And dy >= 0 Then
+    angle = Math.ArcTan(dy / dx) + Math.Pi
+  ElseIf dx < 0 And dy <= 0 Then
+    angle = Math.ArcTan(dy / dx) - Math.Pi
+  ElseIf dx = 0 And dy > 0 Then
+    angle = Math.Pi / 2
+  ElseIf dx = 0 and dy < 0 Then
+    angle = -Math.Pi / 2
+  Else
+    angle = 0
+  EndIf
+  
+  Stack.PushValue("ATan2", angle)
+EndSub
+
+Sub HideCue
+  Shapes.HideShape(cueHandle)
+EndSub
+
 While ("True")
-  MoveBall()
   Program.Delay(Math.Round(1000 / 144))
+  
+  If ballVelocity = 0 Then
+    ShowCue()
+  Else
+    HideCue()
+    MoveBall()
+  EndIf
 EndWhile

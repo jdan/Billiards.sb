@@ -80,7 +80,7 @@ Sub MoveBall
     ballVelocity = ballVelocity - tableFriction * ballVelocity
   EndIf
   
-  If ballVelocity < 0.2 Then
+  If ballVelocity < 0.05 Then
     ballVelocity = 0
   EndIf
   
@@ -100,10 +100,10 @@ Shapes.Move(ball, ballX - ballRadius, ballY - ballRadius)
 
 ballVelocity = 10
 ballAngle = -120 * Math.Pi / 180
-tableFriction = 0.02
+tableFriction = 0.01
 
 Draw()
 While ("True")
   MoveBall()
-  Program.Delay(16)
+  Program.Delay(Math.Round(1000 / 144))
 EndWhile

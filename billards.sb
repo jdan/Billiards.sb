@@ -1,0 +1,109 @@
+windowWidth = 800
+windowHeight = 600
+
+GraphicsWindow.Width = windowWidth
+GraphicsWindow.Height = windowHeight
+
+GraphicsWindow.Left = (Desktop.Width - windowWidth) / 2
+GraphicsWindow.Top = (Desktop.Height - windowHeight) / 2
+
+GraphicsWindow.Title = "Billiards"
+GraphicsWindow.BackgroundColor = "LightBlue"
+
+tableWidth = 500
+tableHeight = 250
+tableFoamPadding = 15
+tableWoodPadding = 30
+tableHoleRadius = 15
+
+tableX = windowWidth / 2 - tableWidth / 2
+tableY = windowHeight / 2 - tableHeight / 2
+
+Sub DrawTable
+  GraphicsWindow.BrushColor = "LightGreen"
+  GraphicsWindow.FillRectangle(tableX, tableY, tableWidth, tableHeight)
+EndSub
+
+Sub DrawFoam
+  GraphicsWindow.BrushColor = "Green"
+  ' Top foam
+  GraphicsWindow.FillRectangle(tableX, tableY - tableFoamPadding, tableWidth, tableFoamPadding)
+  ' Bottom foam
+  GraphicsWindow.FillRectangle(tableX, tableY + tableHeight, tableWidth, tableFoamPadding)
+  ' Left foam
+  GraphicsWindow.FillRectangle(tableX - tableFoamPadding, tableY, tableFoamPadding, tableHeight)
+  ' Right foam
+  GraphicsWindow.FillRectangle(tableX + tableWidth, tableY, tableFoamPadding, tableHeight)
+EndSub
+
+Sub DrawHoles
+  GraphicsWindow.BrushColor = "Black"
+  ' Top left
+  GraphicsWindow.FillEllipse(tableX - tableHoleRadius, tableY - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+  ' Bottom left
+  GraphicsWindow.FillEllipse(tableX - tableHoleRadius, tableY + tableHeight - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+  ' Top Right
+  GraphicsWindow.FillEllipse(tableX + tableWidth - tableHoleRadius, tableY - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+  ' Bottom Right
+  GraphicsWindow.FillEllipse(tableX + tableWidth - tableHoleRadius, tableY + tableHeight - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+  
+  ' Center top
+  GraphicsWindow.FillEllipse(tableX + tableWidth / 2 - tableHoleRadius, tableY - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+  ' Center bottom
+  GraphicsWindow.FillEllipse(tableX + tableWidth / 2 - tableHoleRadius, tableY + tableHeight - tableHoleRadius, tableHoleRadius*2, tableHoleRadius*2)
+EndSub
+
+Sub Draw
+  DrawTable()
+  DrawFoam()
+  DrawHoles()
+EndSub
+
+Sub MoveBall
+  ' Collision!
+  If ballX - ballRadius < tableX Then
+    ballAngle = Math.Pi - ballAngle
+  ElseIf ballX + ballRadius > tableX + tableWidth Then
+    ballAngle = Math.Pi - ballAngle
+  EndIf
+  
+  If ballY - ballRadius < tableY Then
+    ballAngle = 2*Math.Pi - ballAngle
+  ElseIf ballY + ballRadius > tableY + tableHeight Then
+    ballAngle = 2*Math.Pi - ballAngle
+  EndIf
+  
+  If ballVelocity > 0 Then
+    ballX = ballX + ballVelocity * Math.Cos(ballAngle)
+    ballY = ballY + ballVelocity * Math.Sin(ballAngle)
+    
+    ballVelocity = ballVelocity - tableFriction * ballVelocity
+  EndIf
+  
+  If ballVelocity < 0.2 Then
+    ballVelocity = 0
+  EndIf
+  
+  Shapes.Move(ball, ballX - ballRadius, ballY - ballRadius)
+EndSub
+
+' Initialize ball
+ballRadius = 10
+GraphicsWindow.BrushColor = "White"
+GraphicsWindow.PenWidth = 1
+ball = Shapes.AddEllipse(ballRadius*2, ballRadius*2)
+Shapes.ShowShape(ball)
+
+ballX = tableX + 0.75 * tableWidth
+ballY = tableY + 0.5 * tableHeight
+Shapes.Move(ball, ballX - ballRadius, ballY - ballRadius)
+
+ballVelocity = 10
+ballAngle = -120 * Math.Pi / 180
+tableFriction = 0.02
+
+Draw()
+While ("True")
+  MoveBall()
+  Program.Delay(16)
+EndWhile
